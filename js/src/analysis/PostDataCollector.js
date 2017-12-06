@@ -1,4 +1,4 @@
-/* global jQuery, YoastSEO, wpseoPostScraperL10n */
+/* global jQuery, YoastSEO, wpseoPostScraperL10n, wp */
 
 import isKeywordAnalysisActive from "./isKeywordAnalysisActive";
 import removeMarks from "yoastseo/js/markers/removeMarks";
@@ -11,6 +11,7 @@ import { update as updateAdminBar }from "../ui/adminBar";
 
 import publishBox from "../ui/publishBox";
 import _get from "lodash/get";
+import _isUndefined from "lodash/isUndefined";
 
 let $ = jQuery;
 let currentKeyword = "";
@@ -48,6 +49,12 @@ PostDataCollector.prototype.getData = function() {
 	let gutenbergContent = _get( window, "parent._wpGutenbergPost.content.rendered", "" );
 	if ( gutenbergContent !== "" ) {
 		text = gutenbergContent;
+	}
+
+	if ( ! _isUndefined( wp.data ) && ! _isUndefined( wp.data.getPost ) ) {
+		text = wp.data.getPost().getContent();
+
+		console.log( text );
 	}
 
 	return {
@@ -297,6 +304,20 @@ PostDataCollector.prototype.saveSnippetData = function( data ) {
 };
 
 /**
+ * Binds event handlers to the relevant Gutenberg events
+ *
+ * @param {App} app The active YoastSEO.js app.
+ * @returns {void}
+ */
+PostDataCollector.prototype.bindGutenbergEvents = function ( app ) {
+	if ( _isUndefined( wp.data ) ) {
+		return;
+	}
+
+	wp.data.on( 'post-updated', () => app.refresh() );
+};
+
+/**
  * Calls the event binders.
  *
  * @param {app} app The app object.
@@ -306,6 +327,8 @@ PostDataCollector.prototype.saveSnippetData = function( data ) {
 PostDataCollector.prototype.bindElementEvents = function( app ) {
 	this.inputElementEventBinder( app );
 	this.changeElementEventBinder( app );
+
+	this.bindGutenbergEvents( app );
 };
 
 /**
