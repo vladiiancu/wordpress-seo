@@ -1,4 +1,4 @@
-/* global window wpseoPostScraperL10n wpseoTermScraperL10n process */
+/* global window wpseoPostScraperL10n wpseoTermScraperL10n process wp */
 
 import { createStore, applyMiddleware, combineReducers } from "redux";
 import thunk from "redux-thunk";
@@ -102,6 +102,18 @@ function renderReactApps( store, args ) {
 }
 
 /**
+ * Registers a reducer to GutenBerg.
+ *
+ * @param {string} key The key of the reducer to register.
+ * @param {Object} reducer The reducer to register.
+ *
+ * @returns {void}
+ */
+function registerReducerToGutenberg( key, reducer ) {
+	wp.data.registerReducer( key, reducer );
+}
+
+/**
  * Initializes all functionality on the edit screen.
  *
  * This can be a post or a term edit screen.
@@ -114,6 +126,7 @@ function renderReactApps( store, args ) {
  */
 export function initialize( args ) {
 	const store = configureStore();
+	registerReducerToGutenberg( "YoastSEOAnalysis", analysis );
 
 	renderReactApps( store, args );
 
